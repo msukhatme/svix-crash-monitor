@@ -42,6 +42,7 @@ from settings import config
 
 DATA_DIR = config("DATA_DIR")
 WRDS_USERNAME = config("WRDS_USERNAME", default="")
+WRDS_PASSWORD = config("WRDS_PASSWORD", default="")
 SURFACE_START_DATE = config("SURFACE_START_DATE")
 SURFACE_END_DATE = config("SURFACE_END_DATE")
 
@@ -78,7 +79,9 @@ def build_surface_query(
         SELECT secid, date, days, cp_flag, delta,
                impl_volatility, impl_strike, dispersion
         FROM {OPTIONM_LIB}.vsurfd{year}
-        WHERE TODO
+        WHERE secid IN ({_sql_int_list(secids)})
+          AND days IN ({_sql_int_list(maturities)})
+          AND date BETWEEN '{start_date}' AND '{end_date}'
     """
     ## TODO: Replace `WHERE TODO` above with the three conditions the docstring
     ## describes. `build_price_query`, below, shows two of them on another table.
@@ -112,7 +115,7 @@ def _years(start_date, end_date):
 def _connect(wrds_username=WRDS_USERNAME):
     import wrds
 
-    return wrds.Connection(wrds_username=wrds_username)
+    return wrds.Connection(wrds_username=wrds_username, wrds_password=WRDS_PASSWORD)
 
 
 def pull_vol_surface(start_date=SURFACE_START_DATE, end_date=SURFACE_END_DATE, db=None):
